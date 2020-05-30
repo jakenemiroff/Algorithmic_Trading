@@ -20,10 +20,11 @@ api = tradeapi.REST(
 
 # function to split the list of stocks
 # the API call has a max of 200 so I split into two parts
-def splitList(listOfStocks):
+def splitList(listOfStocks, n): 
+      
+    chunked_list = [listOfStocks[i:i + n] for i in range(0, len(listOfStocks), n)] 
 
-    half = len(listOfStocks) // 2
-    return listOfStocks[:half], listOfStocks[half:]
+    return chunked_list
 
 def getDate():
 
@@ -45,10 +46,37 @@ def getStockTickers():
         ticker = row.findAll('td')[0].text.rstrip()
         tickers.append(ticker)
 
-    return splitList(tickers)
+    return tickers
+
+def getPrices(listOfStocks, time):
+    start_dt = time - pd.Timedelta('50 days')
+
+    data_set = None
+    index = 0
+
+    tickers = splitList(listOfStocks, 200)
+
+    for chunk in tickers:
+        
+        if data_set is None:
+            data_set = api.get_barset(chunk, 'day', limit=5)
+        
+        else:
+            data_set.update(api.get_barset(chunk, 'day', limit=5))
+
+    return data_set.df
 
 
 def main():
+
+    # stocks = getStockTickers()
+
+    # x = splitList(stocks, 200)
+
+
+    test = getPrices(getStockTickers(), getDate())
+
+    print(test)
 	# print(getDate())
 	# print(getStockTickers())
 
