@@ -9,14 +9,7 @@ base_url = 'https://paper-api.alpaca.markets'
 account_url = '{}/v2/account'.format(base_url)
 orders_url = '{}/v2/orders'.format(base_url)
 
-easterntz = timezone('US/Eastern')
-
-api = tradeapi.REST(
-    key_id=key_id,
-    secret_key=secret_key,
-    base_url=base_url
-)
-
+api = tradeapi.REST(key_id=key_id, secret_key=secret_key, base_url=base_url)
 
 # function to split the list of stocks
 # the API call has a max of 200 so I split into two parts
@@ -28,7 +21,7 @@ def splitList(listOfStocks, n):
 
 def getDate():
 
-    now = pd.Timestamp.now(tz=easterntz)
+    now = pd.Timestamp.now(tz=timezone('US/Eastern'))
     return now
 
 # function to get a list of stock tickers by web scraping
@@ -65,6 +58,28 @@ def getPrices(listOfStocks, time):
 
     return data_set.df
 
+def calculateScores(price_df):
+
+    differences = {}
+    base_parameter = 10
+    tableIndex = -1
+
+    for ticker in price_df.columns.levels[0]:
+        
+        df = price_df[ticker]
+
+        if len(df.close.values) > base_parameter:
+
+            ema = df.close.ewm(span=base_parameter).mean()[tableIndex]
+            
+            last = df.close.values[tableIndex]
+            
+            difference = (last - ema) / last
+            
+            differences[ticker] = difference
+
+    return sorted(differences.items(), key=lambda x : x[1])
+
 
 def main():
 
@@ -73,9 +88,11 @@ def main():
     # x = splitList(stocks, 200)
 
 
-    test = getPrices(getStockTickers(), getDate())
+    prices = getPrices(getStockTickers(), getDate())
 
-    print(test)
+    scores = calculateScores(prices)
+
+    # print(scores)
 	# print(getDate())
 	# print(getStockTickers())
 
