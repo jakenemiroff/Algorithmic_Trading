@@ -52,7 +52,6 @@ def getPrices(listOfStocks, time):
     start_dt = time - pd.Timedelta('50 days')
 
     data_set = None
-    index = 0
 
     tickers = splitList(listOfStocks, 200)
 
