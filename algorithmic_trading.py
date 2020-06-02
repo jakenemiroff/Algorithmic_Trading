@@ -4,6 +4,7 @@ import pandas as pd
 from pytz import timezone
 import alpaca_trade_api as tradeapi
 from config import *
+import time
 
 base_url = 'https://paper-api.alpaca.markets'
 account_url = '{}/v2/account'.format(base_url)
@@ -137,6 +138,42 @@ def createOrder(prices):
 
     return orders
 
+def execute_trade(orders):
+
+    buffer_time = 30
+
+    total_orders = sorted(orders, key=lambda order: order['side'] == 'sell')
+
+    for order in total_orders:
+
+        if order['side'] == 'sell':
+            try:
+                api.submit_order(symbol=order['symbol'], qty=order['qty'], side='sell', type='market', time_in_force='day')
+
+            except Exception as e:
+                print(e)
+
+            count = buffer_time
+            pending_orders = api.list_orders()
+            
+            while count > 0 & len(pending_orders) != 0:
+                time.sleep(1)
+                count -= 1
+
+        else:
+            try:
+                api.submit_order(symbol=order['symbol'], qty=order['qty'], side='buy', type='market', time_in_force='day')
+        
+            except Exception as e:
+                print(e)
+
+            count = buffer_time
+            pending_orders = api.list_orders()
+
+            while count > 0 & len(pending_orders) != 0:
+                time.sleep(1)
+                count -= 1
+
 
 def main():
 
@@ -145,6 +182,8 @@ def main():
 
     scores = calculateScores(prices)
 
-    order = createOrder(prices)
+    orders = createOrder(prices)
+
+    execute_trade(orders)
 
 main()
