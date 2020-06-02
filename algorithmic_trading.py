@@ -121,7 +121,6 @@ def createOrder(prices):
     # if current portfolio is missing stocks from the desired portfolio then put in a buy order
     maximum_buys = max_holdings - (len(positions) - len(stocks_to_sell))
 
-
     stocks_buy_list = list(stocks_to_buy)
 
     index = 0
@@ -176,7 +175,6 @@ def execute_trade(orders):
 
 
 def main():
-
 
     prices = getPrices(getStockTickers(), getDate())
 
