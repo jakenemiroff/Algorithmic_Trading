@@ -124,7 +124,7 @@ def createOrder(prices):
     stocks_buy_list = list(stocks_to_buy)
 
     index = 0
-    while maximum_buys > 0:
+    while maximum_buys > 0 & index < len(stocks_buy_list):
 
         shares = quantity // float(prices[stocks_buy_list[index]].close.values[-1])
 
